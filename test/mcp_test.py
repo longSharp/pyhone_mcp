@@ -4,8 +4,7 @@ import os
 import traceback
 from typing import Optional
 from contextlib import AsyncExitStack
-from mcp import ClientSession, StdioServerParameters
-from mcp.client.stdio import stdio_client
+
 from openai import OpenAI
 from dotenv import load_dotenv
 

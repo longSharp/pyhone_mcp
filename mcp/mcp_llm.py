@@ -18,7 +18,7 @@ class MCPClient:
         self.session = None
         self.exit_stack = AsyncExitStack()
         self.client = OpenAI(
-            api_key="sk-02bd21ded17c4dbba4c345fc4965534c",
+            api_key=os.getenv("QWEN_OPENAI_API_KEY"),
             base_url="https://dashscope.aliyuncs.com/compatible-mode/v1"
         )
         self.model = "qwen-plus-character"
