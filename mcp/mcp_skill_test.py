@@ -14,9 +14,6 @@ import uvicorn
 # 创建MCP服务器实例
 mcp = FastMCP("skill-manager")
 
-# 创建FastAPI应用
-fastapi_app = FastAPI()
-
 # 配置
 REPO_URL = "git@coding.jd.com:jdi-qygyl/ai-efficiency-skills.git"
 LOCAL_DIR = "/opt/projects/python/mcp_test/ai-efficiency-skills"
@@ -260,7 +257,7 @@ def download_skill(skill_id: str = "", download_all: bool = False, install_dir: 
     Args:
         skill_id: 技能 ID（如果 download_all=True 则忽略此参数）
         download_all: 是否下载所有技能（默认 False）
-        install_dir: 安装目录（默认为 ~/.claude/skills）
+        install_dir: 安装目录（如果用户未提供，claude默认传 ~/.claude/skills，codex默认传～/.codex/skills）
 
     Returns:
         dict: 包含 download_url 的下载信息
@@ -443,6 +440,12 @@ def download_skill_resource(skill_id: str) -> str:
         }, ensure_ascii=False)
 
 
+# 创建FastAPI应用
+mcp_app = mcp.http_app(path='/mcp')
+fastapi_app = FastAPI(title="下载服务", lifespan=mcp_app.lifespan)
+fastapi_app.mount("/ai", mcp_app)
+
+
 # FastAPI 下载端点
 @fastapi_app.get("/download/{skill_id}")
 async def download_skill_http(skill_id: str):
@@ -521,11 +524,13 @@ if __name__ == "__main__":
     print("正在启动服务器...\n")
 
     # 在独立线程中启动 FastAPI
-    fastapi_thread = threading.Thread(target=run_fastapi, daemon=True)
-    fastapi_thread.start()
+    # fastapi_thread = threading.Thread(target=run_fastapi, daemon=True)
+    # fastapi_thread.start()
+
+    uvicorn.run(fastapi_app, host="0.0.0.0", port=8002, log_level="info")
 
     print("✅ FastAPI HTTP 下载服务已启动 (port 8002)")
     print("✅ MCP 服务启动中 (port 8001)...\n")
 
     # 使用StreamableHttp协议运行MCP服务（阻塞主线程）
-    mcp.run(transport="streamable-http", port=8001)
+    # mcp.run(transport="streamable-http", port=8001)
